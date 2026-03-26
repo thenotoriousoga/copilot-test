@@ -1,2 +1,10 @@
 server:
   port: 8080
+
+# カスタムプロパティ（意図的にキャメルケースで記述）
+app:
+  maxRetryCount: 3
+  defaultUserName: "admin"
+  apiBaseUrl: "http://localhost:8080"
+  enableDebugMode: true
+  sessionTimeoutMinutes: 30
