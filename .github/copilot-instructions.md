@@ -82,6 +82,13 @@
 - 誤差のない計算には `BigDecimal` を使う
 - `BigDecimal` の比較は `compareTo()` を使用する（`equals()` は精度が異なると不一致）
 
+### Lombok
+
+- `@Data` は必要な場合以外は使用しない（意図しない `@Setter` や `@EqualsAndHashCode` が含まれるため）
+- 必要なアノテーションだけを個別に指定する（`@Getter`, `@RequiredArgsConstructor` 等）
+- コンストラクタインジェクションには `@RequiredArgsConstructor` を使用する
+- エンティティのJPA用デフォルトコンストラクタには `@NoArgsConstructor(access = AccessLevel.PROTECTED)` を使用する
+
 ### その他
 
 - `@Override` アノテーションを適切に指定する
