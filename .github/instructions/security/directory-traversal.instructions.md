@@ -45,41 +45,31 @@ applyTo: "src/main/java/**"
 
 ```java
 // パターン1: 外部入力を直接ファイルパスに使用
-public byte[] readFile(String filename) {
-    Path path = Paths.get("/uploads/" + filename); // 危険
-    return Files.readAllBytes(path);
-}
+Path path = Paths.get("/uploads/" + filename); // 危険
+return Files.readAllBytes(path);
 
 // パターン2: 外部入力をFileコンストラクタに使用
-public byte[] getFile(String name) {
-    return Files.readAllBytes(new File("/data", name).toPath()); // 危険
-}
+return Files.readAllBytes(new File("/data", name).toPath()); // 危険
 
 // パターン3: 外部入力でInputStream を取得
-public InputStream loadTemplate(String template) {
-    return new FileInputStream("/templates/" + template); // 危険
-}
+return new FileInputStream("/templates/" + template); // 危険
 ```
 
 ### 安全なコード例（指摘不要）
 
 ```java
 // 根本的解決1: IDで間接参照（外部入力をファイルパスに使用しない）
-public byte[] readFileById(Long id) {
-    String storedName = fileRepository.findStoredNameById(id);
-    Path path = Paths.get(UPLOAD_DIR).resolve(storedName);
-    return Files.readAllBytes(path);
-}
+String storedName = fileRepository.findStoredNameById(id);
+Path path = Paths.get(UPLOAD_DIR).resolve(storedName);
+return Files.readAllBytes(path);
 
 // 根本的解決2: 固定ディレクトリ + ファイル名のみ抽出 + パス検証
-public byte[] readFile(String filename) {
-    Path basePath = Paths.get(UPLOAD_DIR).toAbsolutePath().normalize();
-    Path filePath = basePath.resolve(Paths.get(filename).getFileName()).normalize();
-    if (!filePath.startsWith(basePath)) {
-        throw new SecurityException("不正なパスです");
-    }
-    return Files.readAllBytes(filePath);
+Path basePath = Paths.get(UPLOAD_DIR).toAbsolutePath().normalize();
+Path filePath = basePath.resolve(Paths.get(filename).getFileName()).normalize();
+if (!filePath.startsWith(basePath)) {
+    throw new SecurityException("不正なパスです");
 }
+return Files.readAllBytes(filePath);
 ```
 
 ### 検出対象のAPI
@@ -109,27 +99,8 @@ public byte[] readFile(String filename) {
 
 ### コメント例
 
-#### 対策済みの場合
-
 ```
 【ディレクトリ・トラバーサル】
-固定ディレクトリの基点指定とパス正規化による対策が実施されています。
-念のため、IPAの[『安全なウェブサイトの作り方』](https://www.ipa.go.jp/security/vuln/websecurity/parameter.html)も参照してください。
-```
-
-#### 保険的対策のみの場合
-
-```
-【ディレクトリ・トラバーサル】
-ファイル名の文字列チェックのみで対処しています。`../` や `..%2F` 等のバイパス手法が存在するため、固定ディレクトリの基点指定と `Path.getFileName()` によるファイル名抽出、正規化後のパス検証を組み合わせた根本的解決を検討してください。
-詳細はIPAの[『安全なウェブサイトの作り方』](https://www.ipa.go.jp/security/vuln/websecurity/parameter.html)を参照してください。
-```
-
-#### 未対策の場合
-
-```
-【ディレクトリ・トラバーサル】
-外部入力（`{パラメータ名}`）がファイルパスの構築に直接使用されており、ディレクトリ・トラバーサルの脆弱性があります。攻撃者が `../../etc/passwd` 等のパスを指定することで、意図しないファイルへのアクセスが可能です。
-ファイル名をパラメータで受け取る代わりにIDで間接参照する方式への変更、または固定ディレクトリの基点指定と `Path.getFileName()` によるファイル名抽出、正規化後のパス検証を実装してください。
+{コメント内容}
 詳細はIPAの[『安全なウェブサイトの作り方』](https://www.ipa.go.jp/security/vuln/websecurity/parameter.html)を参照してください。
 ```
