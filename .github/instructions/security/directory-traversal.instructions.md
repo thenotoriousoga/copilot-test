@@ -36,6 +36,10 @@ applyTo: "src/main/java/**"
 - ファイルへのアクセス権限の設定のみで対処している
 - ファイル名のチェック（`/`、`../`、`..\` 等の検出）のみで対処している
   - URLデコード後の `%2F`、`..%2F`、`..%5C` や二重エンコードの `%252F`、`..%252F`、`..%255C` も考慮が必要
+- 保険的対策としてファイル操作を行う場合は、独自にパス検証を実装せず、プロジェクト内の `FileStorageUtil`（`SafeFilePath` + `FileStorageUtil`）を用いること
+  - `com.example.api.domain.SafeFilePath` はトラバーサル検証・パス正規化・ベースディレクトリ配下チェックを一箇所に集約した値オブジェクトである
+  - `com.example.api.util.FileStorageUtil.load()` / `FileStorageUtil.store()` は `SafeFilePath` を引数に取り、安全なファイル読み書きを提供する
+  - ただし `FileStorageUtil` の利用はあくまで保険的対策であり、根本的解決（ID間接参照等による外部入力のファイルパス排除）の検討を併せて促すこと
 
 ## 検出すべきパターン
 
