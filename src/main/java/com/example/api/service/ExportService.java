@@ -1,5 +1,7 @@
 package com.example.api.service;
 
+import com.example.api.domain.SafeFilePath;
+import com.example.api.util.FileStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,18 +20,11 @@ public class ExportService {
 
     /**
      * 指定されたファイル名のエクスポートファイルを読み込む。
-     * トラバーサル文字列のチェックを行い、不正なパスを拒否する。
+     * SafeFilePath によるトラバーサル検証・パス正規化・ベースディレクトリ検証を行う。
      */
     public byte[] loadExportFile(String filename) throws IOException {
-        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
-            throw new IllegalArgumentException("不正なファイル名です: " + filename);
-        }
-
-        Path filePath = Paths.get(exportDir).resolve(filename);
-        if (!Files.exists(filePath)) {
-            throw new IOException("エクスポートファイルが見つかりません: " + filename);
-        }
-        return Files.readAllBytes(filePath);
+        SafeFilePath filePath = new SafeFilePath(exportDir, filename);
+        return FileStorageUtil.load(filePath);
     }
 
     /**

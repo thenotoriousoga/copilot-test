@@ -1,5 +1,6 @@
 package com.example.api.service;
 
+import com.example.api.exception.SecurityViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,19 @@ public class ReportService {
      * サブディレクトリを含むパス指定に対応している。
      */
     public byte[] loadReport(String filePath) throws IOException {
-        Path resolved = Paths.get(reportDir).resolve(filePath);
+        if (filePath == null || filePath.isBlank()) {
+            throw new IllegalArgumentException("ファイルパスが空です");
+        }
+
+        Path base = Paths.get(reportDir).toAbsolutePath().normalize();
+        Path resolved = base.resolve(filePath).normalize();
+
+        if (!resolved.startsWith(base)) {
+            throw new SecurityViolationException("不正なファイルパスです");
+        }
+        if (Files.isDirectory(resolved)) {
+            throw new IllegalArgumentException("ファイルパスがディレクトリを指しています: " + filePath);
+        }
         if (!Files.exists(resolved)) {
             throw new IOException("レポートファイルが見つかりません: " + filePath);
         }
